@@ -2,19 +2,22 @@ FROM ubuntu:trusty
 
 MAINTAINER foostan ks@fstn.jp
 
-RUN apt-get update && apt-get -y install curl
+RUN apt-get update
 
-# install td-agent & plugins
+## install td-agent
+RUN apt-get -y install curl
 RUN curl -L http://toolbelt.treasuredata.com/sh/install-ubuntu-trusty-td-agent2.sh | sh
-RUN td-agent-gem install fluent-plugin-docker-metrics -v 0.0.2
 
-# set config
+## install fluent-plugin-elasticsearch
+RUN apt-get -y install libcurl4-openssl-dev gcc make
+RUN td-agent-gem install fluent-plugin-elasticsearch
+
+## install fluent-plugin-docker-metrics
+RUN td-agent-gem install fluent-plugin-docker-metrics
+
+## setup config
 ADD td-agent.conf.rb /etc/td-agent/
-ENV SEND_TIMEOUT       60s
-ENV RECOVER_WAIT       10s
-ENV HEARTBEAT_INTERVAL 1s
-ENV PHI_THRESHOLD      16
-ENV HARD_TIMEOUT       60
-ENV SERVER_WEIGHT      60
+ENV ELASTICSEARCH_HOST elasticsearch
+ENV ELASTICSEARCH_PORT 9200
 
 ENTRYPOINT td-agent -c /etc/td-agent/td-agent.conf.rb
